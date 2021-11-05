@@ -1,36 +1,42 @@
 package servidor;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+
+import cliente.Cliente;
 
 public class Servidor {
-	public Servidor(int puerto) throws IOException {
-		ServerSocket servidor = new ServerSocket(puerto);
-		
-		System.out.println("Server inicializando...");
-		
-		for(int i = 1; i <= 3; i++) {
-			Socket socket = servidor.accept();
-			DataOutputStream salida = new DataOutputStream(socket.getOutputStream());
-			salida.writeUTF("Sos el cliente Nro: " + i);
-			
-			salida.close();
-			socket.close();
-		}
-		
-		System.out.println("Server Finalizado");
-		servidor.close();
-	}
 	
-	public static void main(String[] args) {
+	private ArrayList<Socket> lista;
+	
+	public Servidor(int puerto) {
+		int i = 0;
+		lista = new ArrayList<Socket>();
 		
 		try {
-			new Servidor(20000);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			ServerSocket servidor = new ServerSocket(puerto);
+			
+			System.out.println("Servidor en Linea...");
+			while(i < 100) {
+				Socket cliente = servidor.accept();
+				lista.add(cliente);
+				new ServidorHilo(cliente, lista).start();
+				i++;
+			}
+			
+			servidor.close();
+			System.out.println("El Servidor se ha cerrado");
+			
+		} catch (Exception e) {
+			System.err.println("Ocurrio un problema con el Servidor");
 		}
-
 	}
+
+	public static void main(String[] args) {
+		
+		new Servidor(40000);
+	}
+	
 }
+
